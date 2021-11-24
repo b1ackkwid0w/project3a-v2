@@ -6,6 +6,15 @@ from .charts import *
 from datetime import timedelta
 
 
+import requests
+from datetime import datetime
+from datetime import date
+import pygal
+
+
+
+
+
 @app.route("/", methods=['GET', 'POST'])
 @app.route("/stocks", methods=['GET', 'POST'])
 def stocks():
@@ -22,6 +31,9 @@ def stocks():
             end_date = convert_date(request.form['end_date'])
             today = datetime.now().date()
             API_KEY = "NDN2S8ZUZVMFC79X"
+
+            # start_date_str = datetime.strftime(start_date, '%Y-%m-%d').date()
+            # end_date_str = datetime.strftime(end_date, '%Y-%m-%d').date()
 
 
             if end_date <= start_date:
@@ -56,6 +68,8 @@ def stocks():
                 chart_type_str = GRAPH[str(chart_type)]  # converting ints to proper strings for queries
                 time_series_str = FUNCTION[str(time_series)]  # converting ints to proper strings for queries
 
+                # inputs = [symbol, chart_type_str, time_series_str, start_date, end_date]
+
                 return_dict = {
                     "stock_symbol": symbol,  # string
                     "graph_type": chart_type_str,  # string
@@ -86,8 +100,50 @@ def stocks():
 
                 if r.status_code == 200: #API call successful
                     # THIS IS WHERE YOU WILL CALL THE METHODS FROM THE CHARTS.PY FILE AND IMPLEMENT YOUR CODE
+
                     # This chart variable is what is passed to the stock.html page to render the chart returned from the api
-                    chart = r.json()
+                    data = r.json()
+
+                    start = return_dict['start_date']
+                    end = return_dict['end_date']
+
+                    # FUNCTION:
+                    # 1. intraday     } --> must also match time of day
+                    # 2. daily          |
+                    # 3. weekly         |--> same format
+                    # 4. monthly        |
+                    pattern = '%Y-%m-%d'
+                    if return_dict['time_series'] == FUNCTION['1']:  # if it's intraday
+                        pattern = pattern + ' %H:%M:%S'  # adjust pattern to match time of day
+
+                    # variables for simplicity
+                    try:
+                        dates_key = list(data.keys())[
+                            1]  # key corresponding to the value for the list of data entries
+                        dates_dict = data[dates_key]  # make new dict to hold the dates
+                    except Exception:
+                        err = 'An error occurred retrieving data from the API. No data sent...'
+                        chart = None
+
+                    # remove dates from dates_dict as specified by start and end
+                    for key in list(
+                            dates_dict.keys()):  # list(<>.keys()) for iterating over keys. Note that dates_dict is still the entire dict of objects
+                        try:
+                            current_key = datetime.strptime(key, pattern)
+                            if current_key.date() < start or current_key.date() > end:
+                                dates_dict.pop(key)
+                        except Exception:
+                            err = 'exception occurred on data entry: ', key
+                            continue
+
+
+                    err = data
+                    test_sdate = today
+                    test_edate = today
+
+                    #chart = render_graph(data, dates_dict)
+                    chart = None
+
 
                 else:
                     err = "ERROR: API call returned no data..."

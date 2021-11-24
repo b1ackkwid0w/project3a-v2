@@ -26,10 +26,11 @@ def render_graph(data, inputs):
   # Looped through the data and added values to arrays
   for x in data:
     dates.append(x)
-    open_data.append(float(data[x]['1. open']))
-    high_data.append(float(data[x]['2. high']))
-    low_data.append(float(data[x]['3. low']))
-    close_data.append(float(data[x]['4. close']))
+    print(data[x])
+    open_data.append(float(data['Weekly Time Series'][x]['1. open']))
+    high_data.append(float(data['Weekly Time Series'][x]['2. high']))
+    low_data.append(float(data['Weekly Time Series'][x]['3. low']))
+    close_data.append(float(data['Weekly Time Series'][x]['4. close']))
 
   # Reversed the arrays so they are in ascending order
   dates.reverse()
