@@ -137,7 +137,7 @@ def stocks():
                             continue
 
 
-                    err = data
+                    err = "ERROR: Unable to render graph..."
                     test_sdate = today
                     test_edate = today
 
